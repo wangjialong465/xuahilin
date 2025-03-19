@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星空粒子雨</title>
+    <style>
+        ::selection { background-color: #ffffff; color: #000000 }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Righteous', 'Microsoft YaHei', sans-serif;
+            background-color: #87CEEB; /* 天蓝色背景 */
+        }
+        h1 {
+            color: #00FF00; /* 荧光绿 */
+            font-size: 72px;
+            text-align: center;
+            position: fixed;
+            z-index: 500;
+            left: 0;
+            right: 0;
+            top: 50%;
+            margin: -36px 0 0 0;
+            mix-blend-mode: difference;
+            text-shadow: 
+                0 0 15px rgba(0,255,0,0.9),
+                0 0 30px rgba(0,255,0,0.6); /* 双层发光效果 */
+        }
+        @media (max-width: 568px) {
+            h1 { font-size: 48px; margin-top: -64px }
+        }
+    </style>
+</head>
+<body>
+    <h1>傻鸟许海玲</h1>
+
+    <script>
+        const vWidth = window.innerWidth;
+        const vHeight = window.innerHeight;
+        const cns = document.createElement('canvas');
+        cns.width = vWidth;
+        cns.height = vHeight;
+        document.body.appendChild(cns);
+        const ctx = cns.getContext('2d');
+
+        // 粒子形状枚举
+        const SHAPE_TYPE = {
+            CIRCLE: 0,
+            SQUARE: 1,
+            LINE: 2,
+            TRIANGLE: 3
+        };
+
+        class Particle {
+            constructor() {
+                this.reset();
+                this.shape = Math.floor(Math.random() * 4);
+                this.hue = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            }
+
+            reset() {
+                this.x = Math.random() * vWidth * 2 - vWidth;
+                this.y = Math.random() * vHeight * 2 - vHeight;
+                this.size = Math.random() * 4 + 2;
+                this.speedX = (Math.random() - 0.5) * 3;
+                this.speedY = (Math.random() - 0.5) * 3;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.shadowColor = this.hue;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = this.hue;
+                
+                switch(this.shape) {
+                    case SHAPE_TYPE.CIRCLE:
+                        ctx.arc(this.x, this.y, this.size/2, 0, Math.PI*2);
+                        ctx.fill();
+                        break;
+                    case SHAPE_TYPE.SQUARE:
+                        ctx.fillRect(this.x-this.size/2, this.y-this.size/2, this.size, this.size);
+                        break;
+                    case SHAPE_TYPE.LINE:
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x + this.size*5, this.y + this.size*5);
+                        ctx.strokeStyle = this.hue;
+                        ctx.lineWidth = this.size/2;
+                        ctx.stroke();
+                        break;
+                    case SHAPE_TYPE.TRIANGLE:
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x + this.size, this.y + this.size*2);
+                        ctx.lineTo(this.x - this.size, this.y + this.size*2);
+                        ctx.closePath();
+                        ctx.fill();
+                }
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > vWidth * 1.5 || this.x < -vWidth * 0.5) this.speedX *= -1;
+                if (this.y > vHeight * 1.5 || this.y < -vHeight * 0.5) this.speedY *= -1;
+            }
+        }
+
+        const particles = Array.from({ length: 1200 }, () => new Particle());
+
+        function animate() {
+            ctx.fillStyle = "rgba(135, 206, 235, 0.08)";
+            ctx.fillRect(0, 0, vWidth, vHeight);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            cns.width = window.innerWidth;
+            cns.height = window.innerHeight;
+            particles.forEach(p => p.reset());
+        });
+    </script>
+</body>
+</html>
